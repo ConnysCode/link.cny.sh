@@ -11,23 +11,76 @@ export type ScrapedOg = {
 }
 
 export async function scrapeOg(url: string): Promise<ScrapedOg> {
-  const res = await fetch(url, {
-    redirect: 'follow',
-    signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
-    headers: {
-      'User-Agent': USER_AGENT,
-      Accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-      'Accept-Language': 'en-US,en;q=0.9',
-      // Bypass the EU cookie-consent interstitial on Google/YouTube properties.
-      // Without this, servers in the EU get the consent page instead of real og:* tags.
-      Cookie: 'CONSENT=YES+',
-    },
-  })
-  const contentType = res.headers.get('content-type') ?? ''
-  if (!contentType.includes('text/html')) return {}
+  // YouTube serves reduced/consent-gated HTML to datacenter IPs — even with a CONSENT cookie.
+  // Use the official oEmbed endpoint for reliable title + thumbnail, then still try HTML for description.
+  if (isYouTubeUrl(url)) {
+    const [oembed, html] = await Promise.all([fetchYouTubeOembed(url), fetchHtml(url)])
+    const scraped = html ? parseOg(html, url) : {}
+    return prune({
+      title: oembed?.title ?? scraped.title,
+      description: scraped.description,
+      imageUrl: oembed?.imageUrl ?? scraped.imageUrl,
+      siteName: oembed?.siteName ?? scraped.siteName ?? 'YouTube',
+    })
+  }
 
-  const html = await readLimited(res, MAX_BYTES)
+  const html = await fetchHtml(url)
+  if (!html) return {}
   return parseOg(html, url)
+}
+
+async function fetchHtml(url: string): Promise<string | undefined> {
+  try {
+    const res = await fetch(url, {
+      redirect: 'follow',
+      signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
+      headers: {
+        'User-Agent': USER_AGENT,
+        Accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+        'Accept-Language': 'en-US,en;q=0.9',
+        // Bypass the EU cookie-consent interstitial on Google properties.
+        Cookie: 'CONSENT=YES+',
+      },
+    })
+    const contentType = res.headers.get('content-type') ?? ''
+    if (!contentType.includes('text/html')) return undefined
+    return await readLimited(res, MAX_BYTES)
+  } catch {
+    return undefined
+  }
+}
+
+function isYouTubeUrl(url: string): boolean {
+  try {
+    const host = new URL(url).hostname.toLowerCase().replace(/^www\./, '')
+    return host === 'youtube.com' || host === 'youtu.be' || host === 'm.youtube.com'
+  } catch {
+    return false
+  }
+}
+
+async function fetchYouTubeOembed(url: string): Promise<ScrapedOg | undefined> {
+  try {
+    const endpoint = `https://www.youtube.com/oembed?url=${encodeURIComponent(url)}&format=json`
+    const res = await fetch(endpoint, {
+      signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
+      headers: { 'User-Agent': USER_AGENT, Accept: 'application/json' },
+    })
+    if (!res.ok) return undefined
+    const data = (await res.json()) as {
+      title?: string
+      author_name?: string
+      thumbnail_url?: string
+      provider_name?: string
+    }
+    return {
+      title: data.title,
+      imageUrl: data.thumbnail_url,
+      siteName: data.provider_name,
+    }
+  } catch {
+    return undefined
+  }
 }
 
 async function readLimited(res: Response, max: number): Promise<string> {
