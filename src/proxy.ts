@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from 'next/server'
+import { normalizeHost } from './utils/url'
 
-const REDIRECT_HOST = process.env.NEXT_PUBLIC_REDIRECT_HOST ?? 'l.cny.sh'
+const REDIRECT_HOST = normalizeHost(process.env.NEXT_PUBLIC_REDIRECT_HOST, 'l.cny.sh')
 
 export function proxy(req: NextRequest) {
   const host = req.headers.get('host')?.split(':')[0]?.toLowerCase()

@@ -7,6 +7,7 @@ import { RedditEmbed } from './embeds/RedditEmbed'
 import { DiscordEmbed } from './embeds/DiscordEmbed'
 import { IMessageBubble } from './embeds/IMessageBubble'
 import { hostFromUrl, type EmbedTags } from './embeds/types'
+import { normalizeHost } from '@/utils/url'
 import './embeds/embeds.css'
 
 type ScrapedResponse = {
@@ -50,7 +51,7 @@ export function ShortenComposer({
   const abortRef = useRef<AbortController | null>(null)
 
   const validUrl = useMemo(() => isProbablyUrl(targetUrl), [targetUrl])
-  const redirectHost = process.env.NEXT_PUBLIC_REDIRECT_HOST ?? 'l.cny.sh'
+  const redirectHost = normalizeHost(process.env.NEXT_PUBLIC_REDIRECT_HOST, 'l.cny.sh')
 
   useEffect(() => {
     if (!validUrl) {

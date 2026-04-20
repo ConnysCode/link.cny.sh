@@ -18,6 +18,9 @@ export async function scrapeOg(url: string): Promise<ScrapedOg> {
       'User-Agent': USER_AGENT,
       Accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
       'Accept-Language': 'en-US,en;q=0.9',
+      // Bypass the EU cookie-consent interstitial on Google/YouTube properties.
+      // Without this, servers in the EU get the consent page instead of real og:* tags.
+      Cookie: 'CONSENT=YES+',
     },
   })
   const contentType = res.headers.get('content-type') ?? ''

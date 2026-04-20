@@ -1,3 +1,8 @@
+export function normalizeHost(value: string | undefined, fallback: string): string {
+  const raw = (value ?? fallback).trim()
+  return raw.replace(/^https?:\/\//i, '').replace(/\/+$/, '')
+}
+
 export function isValidHttpUrl(value: unknown): boolean {
   if (typeof value !== 'string') return false
   try {

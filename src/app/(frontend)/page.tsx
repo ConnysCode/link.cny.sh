@@ -4,6 +4,7 @@ import React from 'react'
 
 import config from '@/payload.config'
 import { isFrontendUser } from '@/access/links'
+import { normalizeHost } from '@/utils/url'
 import { ShortenComposer } from './components/ShortenComposer'
 import './styles.css'
 
@@ -30,7 +31,7 @@ export default async function HomePage() {
       .map((d) => ({ id: d.id, slug: d.slug, targetUrl: d.targetUrl }))
   }
 
-  const redirectHost = process.env.NEXT_PUBLIC_REDIRECT_HOST ?? 'l.cny.sh'
+  const redirectHost = normalizeHost(process.env.NEXT_PUBLIC_REDIRECT_HOST, 'l.cny.sh')
 
   return (
     <div className="page">

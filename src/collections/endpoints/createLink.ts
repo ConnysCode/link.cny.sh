@@ -1,7 +1,7 @@
 import type { Endpoint } from 'payload'
 
 import { isFrontendUser, isSpecialUser } from '@/access/links'
-import { isValidHttpUrl } from '@/utils/url'
+import { isValidHttpUrl, normalizeHost } from '@/utils/url'
 
 const SLUG_FORMAT = /^[a-z0-9][a-z0-9-_]{0,62}[a-z0-9]$|^[a-z0-9]$/i
 const RESERVED_SLUGS = new Set([
@@ -89,7 +89,7 @@ export const createLinkEndpoint: Endpoint = {
       overrideAccess: true,
     })
 
-    const redirectHost = process.env.NEXT_PUBLIC_REDIRECT_HOST ?? 'l.cny.sh'
+    const redirectHost = normalizeHost(process.env.NEXT_PUBLIC_REDIRECT_HOST, 'l.cny.sh')
     const protocol =
       redirectHost === 'localhost' || redirectHost.startsWith('127.') ? 'http' : 'https'
     const port = protocol === 'http' ? ':3000' : ''
