@@ -58,7 +58,7 @@ export function ImageCropper({ src, fileName = 'cropped.jpg', onConfirm, onCance
           </h2>
           <p className="cropper-deck">
             Drag to reposition, scroll or use the slider to zoom. The frame matches how the
-            image will appear on Twitter, Discord and iMessage (16∶9).
+            image will appear on Reddit, Discord and iMessage (16∶9).
           </p>
         </header>
 

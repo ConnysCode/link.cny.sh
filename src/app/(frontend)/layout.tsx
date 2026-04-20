@@ -28,7 +28,7 @@ const mono = JetBrains_Mono({
 
 export const metadata = {
   title: 'link.cny.sh — send a link, make it land',
-  description: 'Paste a URL. See how it will look on Twitter, Discord, and iMessage before you share it.',
+  description: 'Paste a URL. See how it will look on Reddit, Discord, and iMessage before you share it.',
 }
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {

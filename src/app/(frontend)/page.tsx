@@ -58,7 +58,7 @@ export default async function HomePage() {
           Send a link.<br /><em>Make it land.</em>
         </h1>
         <p className="hero-deck">
-          Paste a URL. See exactly how it will look on Twitter, Discord and iMessage —
+          Paste a URL. See exactly how it will look on Reddit, Discord and iMessage —
           and gently rewrite the headline before you share it.
         </p>
       </section>
